@@ -1,73 +1,121 @@
-# React + TypeScript + Vite
+# Weather Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive weather dashboard built with React + TypeScript that combines:
 
-Currently, two official plugins are available:
+- OpenWeather One Call forecast data
+- OpenWeather air pollution data
+- OpenWeather weather tile overlays (clouds, precipitation, pressure, wind, temperature)
+- A MapTiler basemap rendered through Leaflet
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The app lets you pick preset cities or click anywhere on the map for custom coordinates, then explores current conditions, hourly and daily forecast, and AQI/pollutant details.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Interactive map with click-to-select location
+- Selectable weather overlays (`clouds_new`, `precipitation_new`, `pressure_new`, `wind_new`, `temp_new`)
+- Current weather card (temperature, feels-like, humidity, wind speed, local timezone clock)
+- 48-hour hourly forecast
+- Daily forecast
+- Additional weather metrics (cloudiness, UV index, wind direction, pressure, sunrise, sunset)
+- Air pollution side panel:
+  - AQI score
+  - Pollutant concentration cards
+  - Per-pollutant quality level ranges (Good -> Very Poor)
+- Loading skeletons with React Suspense fallbacks
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19
+- TypeScript
+- Vite 8
+- Tailwind CSS v4
+- TanStack Query
+- Leaflet + React Leaflet
+- MapTiler Leaflet SDK
+- Zod runtime validation
+- Base UI primitives
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Project Structure
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  api.ts                     # API calls + Zod parsing
+  schemas/                   # API response validators
+  components/
+    cards/                   # Current, hourly, daily, and additional info cards
+    dropdowns/               # Location and map-type selectors
+    skeletons/               # Suspense loading UI
+    Map.tsx                  # Leaflet map + weather tile overlay
+    MapLegend.tsx            # Dynamic legend for active overlay
+    SidePanel.tsx            # Air quality details panel
+  App.tsx                    # Main layout + state composition
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 20+ (recommended for Vite 8)
+- npm
+
+### 2. Install dependencies
+
+```bash
+npm install
 ```
+
+### 3. Configure environment variables
+
+Create `.env.local` in the project root:
+
+```bash
+VITE_API_KEY=your_openweather_api_key
+VITE_TILER_API_KEY=your_maptiler_api_key
+```
+
+### 4. Run locally
+
+```bash
+npm run dev
+```
+
+Then open the local URL printed by Vite (usually `http://localhost:5173`).
+
+## Available Scripts
+
+- `npm run dev` - start dev server
+- `npm run build` - type-check and build production bundle
+- `npm run preview` - preview production build
+- `npm run lint` - run ESLint
+
+## Data Sources
+
+- OpenWeather:
+  - Geocoding API
+  - One Call 3.0 API
+  - Air Pollution API
+  - Weather map tile layers
+- MapTiler:
+  - Basemap tiles for Leaflet
+
+## Architecture Notes
+
+- `src/api.ts` centralizes all fetch calls.
+- All API responses are validated with Zod schemas before use in UI.
+- TanStack Query manages caching and async state for geocode, weather, and air pollution.
+- UI rendering is split into focused cards and shared primitives for maintainability.
+
+## Current Analysis Findings
+
+- `npm run build` succeeds.
+- `npm run lint` currently reports one issue:
+  - `src/components/cards/AdditionalInfo.tsx`: sparse array in `queryKey` (`['weather', , coords]`).
+- Production bundle is large (`~2.1 MB` before gzip) due map and UI dependencies; code-splitting can improve this.
+- `getGeocode` and `getAirPollution` currently use `http` endpoints, which may cause mixed-content errors if the app is served over `https`.
+
+## Next Improvements (Optional)
+
+- Fix the `queryKey` sparse-array lint issue in `AdditionalInfo`.
+- Switch all OpenWeather endpoints to `https`.
+- Add query retry/error UI states.
+- Split map-heavy code into lazy chunks to reduce initial load size.
