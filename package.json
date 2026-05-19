@@ -1,6 +1,6 @@
 {
   "name": "weather-dashboard",
-  "homepage": "https://samirmokhammad.github.io/Weather-Dashboard/",
+  "homepage": "https://samirmokhammad.github.io/weather-dashboard/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deplay": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
